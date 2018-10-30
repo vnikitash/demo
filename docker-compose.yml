@@ -1,0 +1,37 @@
+version: '2'
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_USER: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./docker/volumes/mysql:/var/lib/mysql"
+  php:
+    image: demo-php:latest
+    container_name: demo-php
+    command: bash -c "sh test_scripts/setup_image.sh && supervisord"
+    depends_on:
+      - db
+  php_test:
+      image: demo-php:latest
+      container_name: demo-php-test
+      command: bash test_scripts/setup_tests.sh
+      depends_on:
+        - db
+  nginx:
+    depends_on:
+      - php
+    image: webdevops/nginx
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public
+      WEB_DOCUMENT_INDEX: index.php
+      WEB_PHP_SOCKET: php:9000
+    volumes:
+      - "./:/app"
+    ports:
+      - "80:80"

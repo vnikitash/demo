@@ -1,0 +1,13 @@
+language: php
+
+php:
+  - '7.2'
+
+sudo: required
+
+script:
+  - sudo service mysql stop
+  - bash setup_travis.sh
+
+services:
+  - docker
